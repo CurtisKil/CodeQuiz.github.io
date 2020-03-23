@@ -1,0 +1,33 @@
+.container {
+    text-align: center;
+    margin: auto;
+    width: 900px;
+}
+
+.btn {
+    background: rgb(2, 46, 82);
+}
+
+.color {
+    background: rgb(2, 46, 82);
+    color: rgb(255, 250, 250);
+    
+}
+
+img {
+    margin-top: 25px;
+    display: block;
+    margin-right: auto;
+    margin-left: auto;
+    width: 400px;
+}
+
+.container-fluid {
+    padding-right: 0px;
+    padding-left: 0px;
+}
+
+.questions {
+    margin-top: 36px;
+}
+

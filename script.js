@@ -1,74 +1,147 @@
-// So I need a start button that hjas a click event and when the button is clicked it sstarts the quiz
-// As well as the timer and then first question appears and the button dissapears
-// I'll need somewhere to store my questions and answers
-// Need an event hadnler for the choices that determines if they're right or wrong and then changes to the nexg question
-// If the answer is wrong I'll need a way to decrement the timer by 10 seconds
-// Questons should be an array of objects, each object will have several values a questoin ("string") choices will be an array of choices
-// Final string that has the answer
+window.onload = function() {
+    console.log("starting");
+};
 
-var questions = [
-    { question: 'whats your fav colors?', choiceA: 'blue', choiceB: 'orange', choiceC: 'red', choiceD: 'purple', answer: 'orange' },
-    { question: 'whats your fav colors?', choiceA: 'blue', choiceB: 'orange', choiceC: 'red', answer: 'orange' }
-]
-var startEl = document.getElementById("start-btn");
-var timerEl = document.getElementById("timer");
-var questionEl = document.getElementById("question");
-var choiceAEl = document.getElementById("choice-A");
-var choiceBEl = document.getElementById("choice-B");
-var choiceCEl = document.getElementById("choice-C");
-var choiceDEl = document.getElementById("choice-D");
+// Below are global variables for index, timer, score
 
+// Index is equal to the question number
+var index = 0;
 
+// Countdown clock. User will get 65 seconds to complete the quiz
+var countDown = 65;
 
+// User score
+var score = 75;
 
-choiceAEl.addEventListener("click", choice); 
-choiceBEl
-choiceCEl
-choiceDEl
+// User high score
+var highScore= 0;
 
-startEl.addEventListener("click", function () {
-    console.log("Hello!");
-    // Timer will begin after start button is clicked
-    // First question appears and the start button dissapears
-    // Here we call the timer function to begin after the click event 
-    timer()
-    showQuestion()
+// Variable for quiz time
+var quizTime;
+
+$("#start-button").on("click", function(event) {
+    event.preventDefault();
+
+// this will hide elements from the quiz
+    $(".img").hide();  
 
 });
 
+// Begin quiz on click of the start button and remove the hidden class from the first group of divs
 
+document.getElementById("start-button").addEventListener("click", event => {
+    console.log("yo");
+    document.getElementById("start-quiz").classList.add("d-none");
+    document.getElementById("quiz-questions").classList.remove("d-none");
+    setTime();
+    renderQuestions();
+    quizTime = setInterval(setTime, 1000);
+});
 
-function choice () {
-    console.log("Hello!");
-    
-    
-
+// This function renders the questions
+function renderQuestions() {
+    var questionsIndexLength = questions.length - 1;
+    if ( index <= questionsIndexLength) {
+        document.getElementById("question").innerHTML = questions[index].title;
+        renderQuestionChoices();
+    }
+    quizOver();
 }
 
-// Execute timer
-// This is the definition
-function timer() {
-    var timeLeft = 5;
+// This function renders the multiple choice options on the HTML as buttons
+function renderQuestionChoices() {
+    var question = questions[index].choices;
+    console.log(question);
+    for (var option = 0; option < question.length; option++) {
+        var questionOptionsDiv = document.getElementById("question-choices");
+        var questionButtons = document.createElement("button");
+        questionButtons.className = 
+            "btn btn-outline-primary btn-lg d-flex justify-content-around";
+        questionButtons.innerHTML = question[option];
 
-    var timeInterval = setInterval(function () {
-        timerEl.textContent = timeLeft + " seconds remaining";
-        timeLeft--;
-
-        if (timeLeft === 0) {
-            timerEl.textContent = "";
-            clearInterval(timeInterval);
-        }
-        // Time w/a computer is based on milliseconds
-    }, 1000);
+        // This fires the check answer function when the user clicks a question choices button
+        questionButtons.setAttribute("onclick","checkAnswer(" + index + "," + option + ");"
+        );
+        questionOptionsDiv.append(questionButtons);
+    }
+    quizOver();
 }
 
-function showQuestion() {
-    questionEl.textContent = questions[0].question
-    choiceAEl.textContent = questions[0].choiceA
-    choiceBEl.textContent = questions[0].choiceB
-    choiceCEl.textContent = questions[0].choiceC
-    choiceDEl.textContent = questions[0].choiceD
+// This function clears the divs to allow rendering of the next question
+function clearQuestionDiv() {
+    console.log("About to clear html");
+    document.getElementById("question-choices").innerHTML = "";
+    quizOver();
+  }
 
+// This function checks if the user selected the correct answer
+function checkAnswer(question, answer) {
+    console.log("question: ", question);
+    console.log("answer", answer);
+    let correctAnswer = questions[question].answer;
+    let userAnswer = questions[question].choices[answer];
+    if (userAnswer == correctAnswer) {
+        index = index + 1;
+        console.log(score);
+        console.log("Correct");
+    }
+
+    // Whether they get the right or wrong asnwer, the program continues to the next question and deducts 15 seconds from the quiz clock
+    else {
+        index = index + 1;
+        countDown = countDown - 15;
+        score = score - 15;
+        console.log(score);
+        console.log("Next question: ", index);
+        console.log("Incorrect");
+    }
+    clearQuestionDiv();
+    renderQuestions();
+    quizOver();
 }
 
+// This function starts the countdown for the time left clock quiz timer when the user clicks the start button
+function setTime() {
+    document.getElementById("quiz-time").innerHTML = countDown + "sec left";
+    countDown--;
+    if (countDown == -1) {
+      clearInterval(quizTime);
+    }
+    quizOver();
+  }
 
+// This is a function that checks to see if these conditions are being met in other functions within the program
+function quizOver() {
+    if (index >= 4 || countDown <=0){
+        document.getElementById("quiz-questions").classList.add("d-none");
+        document.getElementById("all-done").classList.remove("d-none");
+        document.getElementById("quiz-time").innerHTML = countDown + "sec left";
+        document.getElementById("final-score").innerHTML = countDown;
+
+        clearInterval(quizTime);
+    }
+}
+
+// Event listener to fire the function that allows the user to save their inital and high score
+document.getElementById("initials-button").addEventListener("click", saveScore);
+
+// Function for saving high score and initals
+function saveScore() {
+    var userInitials = document.querySelector("#initial-input").value;
+    var finalScore = countDown;
+
+    // Object that stores initials and high scores
+    var scoreObject = { initials: userInitials, score: finalScore };
+
+    var highScores = localStorage.getItem("highScoreList");
+
+    if (highScores == null) {
+        localStorage.setItem("highScoreList", JSON.stringify([scoreObject]));
+        console.log(highScores);
+    }
+    else {
+        highScoreList = JSON.parse(highScores);
+        console.log(typeof highScoreList);
+        localStorage.setItem("highScoreList", JSON.stringify(highScoreList));
+    }
+}
